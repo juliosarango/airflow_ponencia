@@ -1,0 +1,30 @@
+services:
+  web1:
+    ports:
+        - "81:80"
+    image: jsarangoq/apache-php
+    hostname: web1
+    container_name: web1
+    volumes:
+      -  ./web1/:/var/www/html/web1/
+    networks:
+        files_network:
+          ipv4_address: 30.10.0.10
+
+  web2:
+    ports:
+        - "82:80"
+    image: jsarangoq/apache-php
+    hostname: web2
+    container_name: web2
+    volumes:
+      -  ./web2/:/var/www/html/web2/
+    networks:
+        files_network:
+          ipv4_address: 30.10.0.11
+
+networks:
+  files_network:
+    ipam:
+      config:
+        - subnet: 30.10.0.0/24  

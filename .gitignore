@@ -1,0 +1,11 @@
+airflow/logs
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+
+web/web1/files_web1/
+web/web2/files_web2/
