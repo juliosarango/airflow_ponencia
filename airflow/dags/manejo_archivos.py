@@ -5,12 +5,9 @@ from airflow.models import Variable
 
 from pendulum import duration
 
-from archivos import download_files, upload_file
+from archivos import download_files, upload_files, delete_files
 
 from datetime import datetime
-
-def test():
-    return "hola"
 
 email_notificacion = Variable.get("email_notificacion")
 
@@ -29,6 +26,7 @@ with DAG(
     catchup=False,
 
 ) as dag:
+    
     download_files_operator = PythonOperator(
         task_id="descargar_archivos",
         python_callable = download_files,
@@ -37,8 +35,15 @@ with DAG(
 
     upload_files_operator = PythonOperator(
         task_id="subir_archivos",
-        python_callable = upload_file,
+        python_callable = upload_files,
         provide_context=True
     )
 
-    download_files_operator >> upload_files_operator
+    delete_files = PythonOperator(
+        task_id="eliminar_archivos",
+        python_callable=delete_files
+    )
+
+
+
+    download_files_operator >> upload_files_operator >> delete_files

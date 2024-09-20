@@ -1,5 +1,8 @@
-Host 30.10.0.10
+Host web1
     HostkeyAlgorithms +ssh-dss
 
-Host 30.10.0.11
+Host web2
     HostkeyAlgorithms +ssh-dss
+
+Host postgres_db
+    HostkeyAlgorithms +ssh-dss    

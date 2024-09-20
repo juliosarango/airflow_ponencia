@@ -7,6 +7,9 @@ PATH_ORIGEN = Variable.get("path_web_1")
 PATH_DESTINO = Variable.get("path_web_2")
 PATH_LOCAL = Variable.get("path_local")
 
+def push_message(instance, name, valor):
+    instance.xcom_push(key=name, value=valor)
+
 def create_local_path(path):
     print("iniciamos creacion de path {path}")
     exist_dir = os.path.exists(path)
@@ -25,7 +28,6 @@ def download_files():
     contador = 0
     ftp_files = []
     file_names = []
-    result = "error"
     try:
         create_local_path(PATH_LOCAL)
         ftp_files = sftp_client.listdir(PATH_ORIGEN)
@@ -39,7 +41,7 @@ def download_files():
         print("Error al descargar archivo")
 
 
-def upload_file():
+def upload_files(**kwargs):
     """Uploads a file from the local filesystem to a remote server using SSHHook.
 
     Args:
@@ -48,9 +50,6 @@ def upload_file():
     """
     ssh_hook = SSHHook(ssh_conn_id="conn_web2")
     sftp_client = ssh_hook.get_conn().open_sftp()
-
-    # if sftp_client.stat(remote_path) is false:
-    #     sftp_client.mkdir(remote_path)
 
     try:
         sftp_client.stat(PATH_DESTINO)
@@ -65,19 +64,46 @@ def upload_file():
     list_files = os.listdir(PATH_LOCAL)
     contador = 0
     file_names = []
-    result = "error"
+
     for file in list_files:
         local_file = os.path.join(PATH_LOCAL, file)
         remote_file = os.path.join(PATH_DESTINO, file)
         sftp_client.put(local_file, remote_file)
         sftp_client.chmod(remote_file, 0o644)
         contador += 1
-        file_names.append(file)
+        file_names.append(local_file)
 
     if contador == len(list_files) and contador > 0:
-        result = "ok"
+        print("Archivos subidos correctamente")
+        push_message(kwargs["ti"], "archivos_subidos", file_names)
     else:
-        result = "sin_archivos_destino"    
+        print("No se subieron archivos")
+        push_message(kwargs["ti"], "archivos_subidos", [])
 
     sftp_client.close()
-    return result, file_names
+
+
+def delete_files(**kwargs):
+    """Deletes a directory and all of its contents.
+
+    Args:
+        directory (str): The path to the directory to delete.
+    """
+
+    local_files = kwargs["task_instance"].xcom_pull(
+        task_ids="subir_archivos",
+        key="archivos_subidos",
+    )
+
+    if not local_files:
+        return
+    
+    print(local_files)
+
+    try:
+        for file in local_files:    
+            if os.path.isfile(file):
+                print(f"Eliminando el archivo: {file}")
+                os.remove(file) 
+    except Exception as e:
+        print(f"Error al eliminar archivos: {e}")

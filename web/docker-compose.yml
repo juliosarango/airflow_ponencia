@@ -2,29 +2,43 @@ services:
   web1:
     ports:
         - "81:80"
-    image: jsarangoq/apache-php
+    image: image_web1
+    build: ./web1/
     hostname: web1
-    container_name: web1
+    container_name: web1    
     volumes:
       -  ./web1/:/var/www/html/web1/
     networks:
-        files_network:
-          ipv4_address: 30.10.0.10
+        - airflow_default
 
   web2:
     ports:
         - "82:80"
-    image: jsarangoq/apache-php
+    image: image_web2    
+    build: ./web2/
     hostname: web2
     container_name: web2
     volumes:
       -  ./web2/:/var/www/html/web2/
     networks:
-        files_network:
-          ipv4_address: 30.10.0.11
+        - airflow_default
+
+  postgres_db:
+    image: image_postgres
+    build: ./postgres/
+    ports:
+        - "5432:5432"
+    environment:
+      POSTGRES_USER: freedom
+      POSTGRES_PASSWORD: freedom
+      POSTGRES_DB: freedom
+    container_name: postgres_db
+    hostname: postgres_db        
+    restart: always
+    networks:
+        - airflow_default
+
 
 networks:
-  files_network:
-    ipam:
-      config:
-        - subnet: 30.10.0.0/24  
+  airflow_default:
+    external: true
