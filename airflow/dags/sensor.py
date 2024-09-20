@@ -4,6 +4,7 @@ from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 from airflow.providers.amazon.aws.transfers.s3_to_sftp import S3ToSFTPOperator
 from airflow.operators.postgres_operator import PostgresOperator
 from airflow.hooks.S3_hook import S3Hook
+from airflow.operators.email import EmailOperator
 from pendulum import duration
 import os
 
@@ -66,7 +67,14 @@ with DAG(
         autocommit = True        
     )
 
+    notificacion_email = EmailOperator(
+        task_id='notificacion_email',
+        to='jsarangoq@gmail.com',
+        subject='Reporte cargado correctamente!!',
+        html_content='<p>El reporte ha sido cargado correctamente en la BD</p>'
+    )
+
     
-    sensor_aws_s3 >> descargar_from_s3 >> cargar_datos_postgres
+    sensor_aws_s3 >> descargar_from_s3 >> cargar_datos_postgres >> notificacion_email
 
     
