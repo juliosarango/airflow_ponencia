@@ -38,6 +38,15 @@ services:
     networks:
         - airflow_default
 
+  mailhog_airflow:
+    image: mailhog/mailhog
+    container_name: mailhog_airflow
+    hostname: mailhog_airflow
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - airflow_default
 
 networks:
   airflow_default:
